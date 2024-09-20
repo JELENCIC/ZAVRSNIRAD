@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{2c1c4835-1a13-4a58-9110-e4f4b00199c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SOIL2">
+      <UniqueIdentifier>{1dd997c6-2016-489a-971b-85eb91c2432f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="texture">
+      <UniqueIdentifier>{8d36a05a-0a12-4599-8b06-3b4c277133d6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Aplikacija.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Fizika.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\backends\imgui_impl_glfw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\backends\imgui_impl_opengl3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\SOIL2\include\SOIL2\SOIL2.c">
+      <Filter>SOIL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\SOIL2\include\SOIL2\wfETC.c">
+      <Filter>SOIL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\SOIL2\include\SOIL2\image_DXT.c">
+      <Filter>SOIL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\SOIL2\include\SOIL2\image_helper.c">
+      <Filter>SOIL2</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\backends\imgui_impl_glfw.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\backends\imgui_impl_opengl3.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\backends\imgui_impl_opengl3_loader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fizika.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Aplikacija.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core.vs">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\SOIL2.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stb_image.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stb_image_write.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_DDS.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_DDS_c.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_ext.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_ext_c.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_pkm.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_pkm_c.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_pvr.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_pvr_c.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_qoi.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_qoi_c.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\stbi_qoi_write.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\wfETC.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\image_DXT.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\image_helper.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\pkm_helper.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\SOIL2\include\SOIL2\pvr_helper.h">
+      <Filter>SOIL2</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\misc\debuggers\imgui.natstepfilter">
+      <Filter>imgui</Filter>
+    </None>
+    <None Include="core.frag">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\misc\debuggers\imgui.natvis">
+      <Filter>imgui</Filter>
+    </Natvis>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\textures\image1.jpg">
+      <Filter>texture</Filter>
+    </Image>
+    <Image Include="..\textures\image2.png">
+      <Filter>texture</Filter>
+    </Image>
+    <Image Include="..\texture\container2.png">
+      <Filter>texture</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
