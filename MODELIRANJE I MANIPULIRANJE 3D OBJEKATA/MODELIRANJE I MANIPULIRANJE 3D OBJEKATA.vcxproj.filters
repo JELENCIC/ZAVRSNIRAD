@@ -22,6 +22,9 @@
     <Filter Include="texture">
       <UniqueIdentifier>{8d36a05a-0a12-4599-8b06-3b4c277133d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{d69a09ba-7d13-41e6-9747-27043134c7da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -43,9 +46,6 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="Aplikacija.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Fizika.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\backends\imgui_impl_glfw.cpp">
@@ -88,9 +88,6 @@
     </ClInclude>
     <ClInclude Include="..\backends\imgui_impl_opengl3_loader.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Fizika.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Aplikacija.h">
       <Filter>Header Files</Filter>
@@ -182,5 +179,10 @@
     <Image Include="..\texture\container2.png">
       <Filter>texture</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\res\fa-solid-900.ttf">
+      <Filter>res</Filter>
+    </Font>
   </ItemGroup>
 </Project>

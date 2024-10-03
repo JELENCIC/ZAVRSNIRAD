@@ -101,6 +101,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\libs\SOIL2\include;..\libs\glm;..\libs\glew\include;..\libs\glfw\include;..\;..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,6 +119,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\libs\SOIL2\include;..\libs\glm;..\libs\glew\include;..\libs\glfw\include;..\;..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,6 +137,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\libs\SOIL2\include;..\libs\glm;..\libs\glew\include;..\libs\glfw\include;..\;..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,6 +155,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\libs\SOIL2\include;..\libs\glm;..\libs\glew\include;..\libs\glfw\include;..\;..\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -175,7 +179,6 @@
     <ClCompile Include="..\libs\SOIL2\include\SOIL2\SOIL2.c" />
     <ClCompile Include="..\libs\SOIL2\include\SOIL2\wfETC.c" />
     <ClCompile Include="Aplikacija.cpp" />
-    <ClCompile Include="Fizika.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -206,7 +209,6 @@
     <ClInclude Include="..\libs\SOIL2\include\SOIL2\wfETC.h" />
     <ClInclude Include="Aplikacija.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Fizika.h" />
     <ClInclude Include="Shader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -225,6 +227,9 @@
     <Image Include="..\textures\image1.jpg" />
     <Image Include="..\textures\image2.png" />
     <Image Include="..\texture\container2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\res\fa-solid-900.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

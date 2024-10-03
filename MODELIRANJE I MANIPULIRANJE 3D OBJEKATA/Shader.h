@@ -91,6 +91,10 @@ public:
     // Uses the current shader
     void Use()
     {
+        if (this->Program == 0) {
+            std::cerr << "ERROR::SHADER::PROGRAM::NOT_INITIALIZED" << std::endl;
+            return;
+        }
         glUseProgram(this->Program);
     }
 };

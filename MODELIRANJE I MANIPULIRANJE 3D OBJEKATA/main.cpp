@@ -26,13 +26,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <filesystem>
 // Other includes
 #include "SOIL2/SOIL2.h"
 #include "Shader.h"
 #include "Camera.h"
 #include "Aplikacija.h" 
-#include "Fizika.h"
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -87,7 +86,10 @@ int main(int, char**)
     // Create window with graphics context
     GLFWwindow* window = glfwCreateWindow(1280, 720, "MODELIRANJE I MANIPULIRANJE 3D OBJEKATA", nullptr, nullptr);
     if (window == nullptr)
-        return 1;
+    {
+        std::cerr << "Failed to create GLFW window" << std::endl;
+        return EXIT_FAILURE;
+    }
     glfwMakeContextCurrent(window);
     // Initialize key callbacks
     MyApp::InitializeCallbacks(window);
@@ -101,6 +103,17 @@ int main(int, char**)
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    // Load the default font
+    io.Fonts->AddFontDefault();
+
+    // Load Font Awesome with glyph ranges
+    static const ImWchar icons_ranges[] = { 0xf000, 0xf3ff, 0 }; // Icon range from Font Awesome
+    ImFontConfig config;
+    config.MergeMode = true; // Merge Font Awesome with the default font
+    io.Fonts->AddFontFromFileTTF("../res/fa-solid-900.ttf", 16.0f, &config, icons_ranges);
+
+    // Build the font atlas to ensure the font is loaded
+    io.Fonts->Build();
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -120,7 +133,6 @@ int main(int, char**)
 #endif
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    
     // Set up GLEW
     glewExperimental = GL_TRUE;
     GLenum glewError = glewInit();
@@ -130,14 +142,12 @@ int main(int, char**)
         return EXIT_FAILURE;
     }
 
-    // Define clear color
-    //ImVec4 clear_color = ImVec4(0.9f, 0.15f, 0.60f, 1.00f);
-
     // Initialize framebuffer
     MyApp::InitFramebuffer(1280, 720);
 
+    // Initialize app resources
     MyApp::Initialize();
-    
+
     // Main loop
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr; // Disable ini file saving/loading
