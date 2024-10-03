@@ -1,8 +1,8 @@
 #include "Aplikacija.h"
 #include "imgui.h"
-#include "Fizika.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <filesystem>
 #include "SOIL2/SOIL2.h"
 
 #include <glm/glm.hpp>
@@ -16,60 +16,189 @@ namespace MyApp
 {
     bool Enable_Mouse_Rotation = false;
     bool options = true;
-    bool show_another_window1 = false;
-    bool show_another_window2 = false;
-    bool show_another_window3 = false;
+    bool AddingCube = false;
+    bool RemovingCube = false;
 
     GLuint framebuffer, textureColorbuffer, rbo;
-    GLuint VAO, VBO, EBO, texture;
+    
     Shader* ourShader;
 
     int currentFramebufferWidth = 1280;
     int currentFramebufferHeight = 720;
 
     
-    void RenderInfiniteGrid(float spacing, int gridSize) {
-        glLineWidth(1.0f); // Set line width
 
-        // Draw the grid lines
-        glBegin(GL_LINES);
+    std::vector<std::string> LoadTextureFiles(const std::string& directory) {
+        std::vector<std::string> textureFiles;
 
-        // Loop through X axis lines
-        for (int i = -gridSize; i <= gridSize; ++i) {
-            if (i == 0) {
-                // X axis (red)
-                glColor3f(1.0f, 0.0f, 0.0f);
+        try {
+            for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+                if (entry.is_regular_file() && (entry.path().extension() == ".png" || entry.path().extension() == ".jpg")) {
+                    textureFiles.push_back(entry.path().filename().string());
+                }
             }
-            else {
-                // Other lines (white)
-                glColor3f(1.0f, 1.0f, 1.0f);
-            }
-
-            glVertex2f(i * spacing, -gridSize * spacing); // Vertical line from bottom to top
-            glVertex2f(i * spacing, gridSize * spacing);
+        }
+        catch (const std::filesystem::filesystem_error& e) {
+            std::cerr << "Error reading directory: " << e.what() << std::endl;
         }
 
-        // Loop through Y axis lines
-        for (int i = -gridSize; i <= gridSize; ++i) {
-            if (i == 0) {
-                // Y axis (blue)
-                glColor3f(0.0f, 0.0f, 1.0f);
-            }
-            else {
-                // Other lines (white)
-                glColor3f(1.0f, 1.0f, 1.0f);
-            }
-
-            glVertex2f(-gridSize * spacing, i * spacing); // Horizontal line from left to right
-            glVertex2f(gridSize * spacing, i * spacing);
-        }
-
-        glEnd();
+        return textureFiles;
     }
+
+    class Cube {
+    public:
+        GLuint VAO, VBO;
+        GLuint texture;  // Store single texture ID for this cube
+        glm::vec3 position;
+        glm::vec3 scale;
+        glm::vec3 rotationAxis;
+        GLfloat rotationAngle;
+
+        Cube(glm::vec3 pos, glm::vec3 scl, glm::vec3 rotAxis, GLfloat rotAngle, GLuint tex)
+            : position(pos), scale(scl), rotationAxis(rotAxis), rotationAngle(rotAngle), texture(tex) {}
+
+        void InitResources() {
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            
+            GLfloat vertices[] = {
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+            };
+
+            glGenVertexArrays(1, &VAO);
+            glGenBuffers(1, &VBO);
+
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+            glEnableVertexAttribArray(2);
+            glBindVertexArray(0);
+        }
+
+        void Render(Shader& shader) const {
+            shader.Use();
+            glActiveTexture(GL_TEXTURE0);  // Activate texture unit
+            glBindTexture(GL_TEXTURE_2D, texture);  // Bind the texture
+            glUniform1i(glGetUniformLocation(shader.Program, "texture1"), 0);  // Assuming the shader uses "texture1"
+
+            // Bind your VAO and draw the cube
+            glBindVertexArray(VAO);
+            glDrawArrays(GL_TRIANGLES, 0, 36); // Adjust if cube has different vertices
+            glBindVertexArray(0);
+        }
+
+        void Cleanup() {
+            glDeleteVertexArrays(1, &VAO);
+            glDeleteBuffers(1, &VBO);
+            glDeleteTextures(1, &texture);  // Cleanup single texture
+        }
+    };
+
+    std::vector<Cube> cubes;
+    std::vector<std::string> textureList;
+    std::string textureFolder = "../texture"; // Folder path
+    int selectedTextureIndex = 0;
+
+    // Function to load textures from the texture folder
+    GLuint LoadTexture(const std::string& filePath) {
+        GLuint textureID;
+        glGenTextures(1, &textureID);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+
+        // Set texture parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // Load texture image
+        int texWidth, texHeight;
+        unsigned char* image = SOIL_load_image(filePath.c_str(), &texWidth, &texHeight, 0, SOIL_LOAD_RGBA);
+
+        if (image) {
+            std::cout << "Loaded texture: " << filePath << std::endl;
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+        else {
+            std::cerr << "Failed to load texture: " << filePath << std::endl;
+        }
+
+        SOIL_free_image_data(image);
+        glBindTexture(GL_TEXTURE_2D, 0);  // Unbind the texture
+        return textureID;
+    }
+
+
+    
+    glm::vec3 newCubePosition(0.0f, 0.0f, 0.0f);
+    glm::vec3 newCubeScale(1.0f, 1.0f, 1.0f);
+    glm::vec3 newCubeRotationAxis(0.0f, 1.0f, 0.0f);
+    float newCubeRotationAngle = 180.0f;
     
 
+    void AddCube(const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotationAxis, float rotationAngle, const std::string& textureName) {
+        GLuint textureID = LoadTexture(textureFolder + "/" + textureName);  // Load the texture for this cube
+        Cube newCube(position, scale, rotationAxis, rotationAngle, textureID);
+        newCube.InitResources();  // Initialize resources for the new cube
+        cubes.push_back(newCube); // Add to the cubes vector
+    }
+
+    void RemoveCube(int index) {
+        if (index >= 0 && index < cubes.size()) {
+            cubes.erase(cubes.begin() + index);
+        }
+    }
+
+
     // Camera
-    Camera  camera(glm::vec3(0.0f, 0.0f, 3.0f));
+    Camera  camera(glm::vec3(0.0f, 3.0f, 0.0f));
     GLfloat lastX = currentFramebufferWidth / 2.0;
     GLfloat lastY = currentFramebufferHeight / 2.0;
     bool keys[1024];
@@ -98,18 +227,23 @@ namespace MyApp
         }
     }
 
-    void ScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+    /*void ScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
         camera.ProcessMouseScroll(yOffset);
-    }
+    }*/
 
     void MouseCallback(GLFWwindow* window, double xPos, double yPos)
     {
         if (Enable_Mouse_Rotation)  // Only process mouse movements if options is false
         {
-            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS ||
+                glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
             {
                 // Hide the cursor
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+                static bool firstMouse = true; // Make sure to track the first mouse movement
+                static GLfloat lastX = 400.0;   // Initialize with the middle of the window
+                static GLfloat lastY = 300.0;   // Initialize with the middle of the window
 
                 if (firstMouse)
                 {
@@ -134,6 +268,7 @@ namespace MyApp
             }
         }
     }
+
 
     void DoMovement()
     {
@@ -194,146 +329,46 @@ namespace MyApp
         // Set the required callback functions
         glfwSetKeyCallback(window, KeyCallback);
         glfwSetCursorPosCallback(window, MouseCallback);
-        glfwSetScrollCallback(window, ScrollCallback);
+        //glfwSetScrollCallback(window, ScrollCallback);
   
     }
-    glm::vec3 cubePositions[] =
-    {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f, 2.0f, -2.5f),
-        glm::vec3(1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f)
-    };
-    // Initialize resources (Shaders, VAOs, VBOs, etc.)
-    void InitResources()
-    {
-        glEnable(GL_DEPTH_TEST);
 
-        // enable alpha support
+    //std::vector<std::string> textureList;
+    //std::string textureFolder = "../texture"; // Adjust this to your folder path
+    //int selectedTextureIndex = -1;
+    void InitResources() {
+        glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         ourShader = new Shader("core.vs", "core.frag");  // Initialize the Shader dynamically
-
-
-        GLfloat vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-        };
-
         
-
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glGenBuffers(1, &EBO);
-
-        glBindVertexArray(VAO);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        /*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
-
-        //position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-        glEnableVertexAttribArray(0);
-        //color attribute
-        /*glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-        glEnableVertexAttribArray(1);*/
-        //texture attribute
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-        glEnableVertexAttribArray(2);
-
-        glBindVertexArray(0);
-
-        // Load and create texture
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        int texWidth, texHeight;
-        unsigned char* image = SOIL_load_image("../texture/container2.png", &texWidth, &texHeight, 0, SOIL_LOAD_RGBA);
-
-        if (image == nullptr) {
-            std::cout << "Failed to load texture: " << SOIL_last_result() << std::endl;
-        }
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        SOIL_free_image_data(image);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        /*glm::mat4 projection;
-        projection = glm::perspective(45.0f, (GLfloat)currentFramebufferWidth / currentFramebufferHeight, 0.1f, 1000.0f);*/
+        textureList = LoadTextureFiles(textureFolder);
+        
     }
-
+    glm::vec3 backgroundColor(0.1f, 0.1f, 0.1f); // Default background color (dark gray)
+    const glm::vec3 defaultBackgroundColor(0.1f, 0.1f, 0.1f); // Default background color
+    int selectedCube = -1;
     // Function to render the scene to the framebuffer
     void RenderSceneToFramebuffer()
     {
         GLfloat currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
         // Bind the framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-        // Check and call events
+        // Poll events and handle movement
         glfwPollEvents();
         DoMovement();
 
         // Clear the framebuffer with a dark color and enable depth testing
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        // Calculate the viewport and set it
+
+        glEnable(GL_DEPTH_TEST);  // Enable depth testing
+
+        // Calculate aspect ratio and adjust viewport
         float aspectRatio = 16.0f / 9.0f;
         int newWidth = currentFramebufferWidth;
         int newHeight = static_cast<int>(currentFramebufferWidth / aspectRatio);
@@ -348,26 +383,14 @@ namespace MyApp
         int viewportY = (currentFramebufferHeight - newHeight) / 2;
         glViewport(viewportX, viewportY, newWidth, newHeight);
 
-        
         // Activate shader
         ourShader->Use();
 
-        // Example of rendering an infinite grid with a large size
-        float gridSpacing = 1.0f;  // Distance between grid lines
-        int gridSize = 1000;       // Large enough to feel infinite
-        // Set up the orthographic projection
         
-        RenderInfiniteGrid(gridSpacing, gridSize);
         // Set up projection matrix (Perspective projection)
-        //glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)newWidth / (GLfloat)newHeight, 0.1f, 100.0f);
         glm::mat4 projection = glm::perspective(camera.GetZoom(), (GLfloat)newWidth / (GLfloat)newHeight, 0.1f, 100.0f);
         // Set up view matrix (camera position)
-        glm::mat4 view = glm::mat4(1.0f);
-        //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f)); // Move back by 3 units to view the object
-        view = camera.GetViewMatrix();
-        // Set up model matrix (rotating the object)
-        glm::mat4 model;
-        //model = glm::rotate(model, (GLfloat)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        glm::mat4 view = camera.GetViewMatrix();
 
         // Get uniform locations
         GLint modelLoc = glGetUniformLocation(ourShader->Program, "model");
@@ -375,34 +398,28 @@ namespace MyApp
         GLint projLoc = glGetUniformLocation(ourShader->Program, "projection");
 
         // Pass matrices to the shader
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        // Bind texture
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glUniform1i(glGetUniformLocation(ourShader->Program, "ourTexture1"), 0);
+        
+        
 
-        // Bind VAO and draw the cube
-        glBindVertexArray(VAO);
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
-        for (GLuint i = 0; i < 10; i++)
-        {
-            // Calculate the model matrix for each object and pass it to shader before drawing
+        
+        for (auto& cube : cubes) {
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            GLfloat angle = 1.0f * i;
-            model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
+            model = glm::translate(model, cube.position);
+            model = glm::rotate(model, glm::radians(cube.rotationAngle), cube.rotationAxis);
+            model = glm::scale(model, cube.scale);
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            cube.Render(*ourShader); // Render the cube
         }
-        glBindVertexArray(0);
+        
 
-        // Unbind the framebuffer to render to the screen
+        // Unbind framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
 
     // Render the UI with docking and other controls
     void RenderUI(GLFWwindow* window)
@@ -410,7 +427,7 @@ namespace MyApp
         static bool opt_fullscreen = true;
         static bool opt_padding = false;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
+        
         // Window options and docking setup
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
         if (opt_fullscreen)
@@ -442,7 +459,7 @@ namespace MyApp
             ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         }
-
+        
         // Menus and options (as per your existing code)
         if (ImGui::BeginMenuBar())
         {
@@ -458,13 +475,17 @@ namespace MyApp
             }
             ImGui::EndMenuBar();
         }
-
+        
         // Sidebar buttons and windows
-        ImGui::Begin("Alati", 0, 0);
-        if (ImGui::Button("T")) { show_another_window1 = true; }
-        if (ImGui::Button("L")) { show_another_window2 = true; }
-        if (ImGui::Button("P")) { show_another_window3 = true; }
+        ImGui::Begin("Tools", 0, 0);
+        if (ImGui::Button(u8"\uf1b2")) { AddingCube = true; }
+        if (ImGui::Button(u8"\uf047")) { RemovingCube = true; }
         ImGui::End();
+
+        
+
+
+        
 
         if (options)
         {
@@ -475,36 +496,133 @@ namespace MyApp
             // Control the enabling/disabling of mouse rotation
             ImGui::Checkbox("Enable Mouse Rotation", &Enable_Mouse_Rotation);
 
+            // Add a color picker to change the background color
+            ImGui::ColorEdit3("Background Color", glm::value_ptr(backgroundColor)); // ColorEdit3 takes an array of 3 floats (RGB)
+
+            // Add a button to reset the background color to its default value
+            if (ImGui::Button("Reset Color to Default")) {
+                backgroundColor = defaultBackgroundColor;  // Reset to default color
+            }
+
             options = closeOptions;
-            if (ImGui::Button("Zatvori"))
+            if (ImGui::Button("Close"))
             {
                 options = false;  // Close the window
             }
-            ImGui::End();    
+
+            ImGui::End();
         }
 
 
-        if (show_another_window1)
+        
+        if (AddingCube)
         {
-            ImGui::Begin("Ime novog prozora", &show_another_window1, 1);
-            ImGui::Text("Koordinate tocke:");
-            if (ImGui::Button("Zatvori")) { show_another_window1 = false; }
+            // Create an ImGui window for adding cubes
+            ImGui::Begin("Create Cube", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking);
+
+            ImGui::Text("Cube Properties");
+
+            // Cube position
+            ImGui::Text("Position");
+            ImGui::InputFloat3("##Position", glm::value_ptr(newCubePosition));
+
+            // Cube scale
+            ImGui::Text("Scale");
+            ImGui::InputFloat3("##Scale", glm::value_ptr(newCubeScale));
+
+            // Rotation axis
+            ImGui::Text("Rotation Axis");
+            ImGui::InputFloat3("##Rotation Axis", glm::value_ptr(newCubeRotationAxis));
+
+            // Rotation angle
+            ImGui::Text("Rotation Angle");
+            ImGui::SliderFloat("##Rotation Angle", &newCubeRotationAngle, 0.0f, 360.0f);
+
+            // Texture selection
+            ImGui::Text("Select Texture");
+
+            // Ensure that there are textures in the list before accessing it
+            if (!textureList.empty())
+            {
+                // Create a temporary array of const char*
+                std::vector<const char*> textureNames;
+                for (const auto& name : textureList) {
+                    textureNames.push_back(name.c_str());
+                }
+
+                // Display the combo box
+                ImGui::Combo("##Textures", &selectedTextureIndex, textureNames.data(), textureNames.size());
+            }
+            else
+            {
+                ImGui::Text("No textures available.");
+            }
+
+            if (ImGui::Button("Add")) {
+                AddCube(newCubePosition, newCubeScale, newCubeRotationAxis, newCubeRotationAngle, textureList[selectedTextureIndex]);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close")) AddingCube = false;
+
             ImGui::End();
         }
-        if (show_another_window2)
+        if (RemovingCube)
         {
-            ImGui::Begin("Linija", &show_another_window2, 1);
-            ImGui::Text("Opis novog prozora 2");
-            if (ImGui::Button("Zatvori")) show_another_window2 = false;
+            ImGui::Begin("Cube Manipulation", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking);
+
+            // Show the cube list in the ImGui list box.
+            ImGui::Text("Cubes");
+            if (ImGui::BeginListBox("##CubeList")) {  // Use an ID to differentiate the list box
+                for (size_t i = 0; i < cubes.size(); i++) {
+                    std::string cubeLabel = "Cube " + std::to_string(i);  // Label each cube by its index.
+                    if (ImGui::Selectable(cubeLabel.c_str(), selectedCube == i)) {
+                        selectedCube = i;  // Update the selected cube's index when clicked.
+                    }
+                }
+                ImGui::EndListBox();
+
+                // Check if a cube is selected for manipulation
+                if (selectedCube >= 0 && selectedCube < cubes.size()) {
+                    Cube& cube = cubes[selectedCube]; // Reference to the selected cube
+
+                    // Cube position
+                    ImGui::Text("Position");
+                    ImGui::InputFloat3("##Position", glm::value_ptr(cube.position));
+
+                    // Cube scale
+                    ImGui::Text("Scale");
+                    ImGui::InputFloat3("##Scale", glm::value_ptr(cube.scale));
+
+                    // Rotation axis
+                    ImGui::Text("Rotation Axis");
+                    ImGui::InputFloat3("##Rotation Axis", glm::value_ptr(cube.rotationAxis));
+
+                    // Rotation angle
+                    ImGui::Text("Rotation Angle");
+                    ImGui::SliderFloat("##Rotation Angle", &cube.rotationAngle, 0.0f, 360.0f);
+                }
+                else {
+                    ImGui::Text("Select a cube to modify");
+                }
+            }
+
+            // Provide a button to remove the selected cube.
+            if (ImGui::Button("Remove")) {
+                if (selectedCube >= 0 && selectedCube < cubes.size()) {
+                    RemoveCube(selectedCube);
+
+                    // If the last cube was removed, adjust the selected index.
+                    if (selectedCube >= cubes.size()) {
+                        selectedCube = cubes.size() - 1;
+                    }
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close")) RemovingCube = false;
+
             ImGui::End();
         }
-        if (show_another_window3)
-        {
-            ImGui::Begin("Površina", &show_another_window3, 1);
-            ImGui::Text("Opis novog prozora 3");
-            if (ImGui::Button("Zatvori")) show_another_window3 = false;
-            ImGui::End();
-        }
+        
 
         // Viewport rendering
         ImGui::Begin("Viewport");
@@ -529,6 +647,11 @@ namespace MyApp
         }
         // Only resize framebuffer if window size changes
         if (windowWidth != currentFramebufferWidth || windowHeight != currentFramebufferHeight) {
+            // Update framebuffer dimensions
+            currentFramebufferWidth = windowWidth;
+            currentFramebufferHeight = windowHeight;
+
+            // Delete and recreate the framebuffer
             glDeleteTextures(1, &textureColorbuffer);
             glDeleteRenderbuffers(1, &rbo);
             glDeleteFramebuffers(1, &framebuffer);
@@ -553,15 +676,12 @@ namespace MyApp
     }
 
     // Call Cleanup when done
-    void Cleanup()
-    {
-        delete ourShader;  // Free the Shader object
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-        glDeleteBuffers(1, &EBO);
-        glDeleteTextures(1, &texture);
-        glDeleteFramebuffers(1, &framebuffer);
-        glDeleteRenderbuffers(1, &rbo);
+    void Cleanup() {
+        for (auto& cube : cubes) {
+            cube.Cleanup();
+        }
+        cubes.clear();
+        delete ourShader;
     }
 
 }

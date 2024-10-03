@@ -26,8 +26,6 @@ namespace MyApp
     void RenderUI(GLFWwindow* window);
 
     void Initialize();
-    // Function to set up the scene (load shaders, textures, etc.)
-    void SetupScene();
 
     void Cleanup();
 
